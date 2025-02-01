@@ -12,7 +12,7 @@ migrate_down:
 	migrate -database ${DATABASE_URL} -path db/migrations down
 
 build:
-	sqlc generate
+	# sqlc generate
 	go build -o bin/server ./cmd/server/...
 
 run: build

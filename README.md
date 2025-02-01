@@ -30,4 +30,28 @@ normal VARCHAR/Integer/DateTime/Timestamp columns.
 
 ## Development
 
+Ensure that you have the prerequisites installed:
+
+- Docker
+- [sqlc](https://sqlc.dev/)
+- [Go Migrate](https://github.com/golang-migrate/migrate)
+
+Start docker:
+
+```sh
+docker compose up
+```
+
+or if you're using an older version of docker-compose
+
+```sh
+docker-compose up
+```
+
+Now run the database migrations
+
+```sh
+make migrate_up
+```
+
 ## Deployment
