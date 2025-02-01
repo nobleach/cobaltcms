@@ -42,16 +42,22 @@ Start docker:
 docker compose up
 ```
 
-or if you're using an older version of docker-compose
+or if you're using an older version of docker-compose:
 
 ```sh
 docker-compose up
 ```
 
-Now run the database migrations
+Now run the database migrations:
 
 ```sh
 make migrate_up
+```
+
+You can now run the server:
+
+```sh
+make run
 ```
 
 ## Deployment
