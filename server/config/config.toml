@@ -1,3 +1,9 @@
 [server]
-port = 8080
+# Because of the absolute silliness of Echo, we either
+# put the colon here, or we do it in code. 
+# Let's do it here
+port = ":8080"
+
+[db]
+
 

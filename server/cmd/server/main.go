@@ -1,8 +1,6 @@
 package main
 
 import (
-	"strconv"
-
 	"github.com/knadh/koanf"
 	"github.com/knadh/koanf/parsers/toml"
 	"github.com/knadh/koanf/providers/file"
@@ -29,9 +27,9 @@ func main() {
 		log.Error().Err(err).Msg("Could not set up a connection to the data store")
 	}
 
-	port := ":" + strconv.Itoa(k.Int("server.port"))
+	port := k.String("server.port")
 
-	apiServer := api.NewApiServer(port, store)
+	apiServer := api.NewApiServer(k, store)
 	log.Info().Msgf("CobalCMS server is listening on port %s", port)
 	apiServer.Run()
 }

@@ -5,15 +5,16 @@ import (
 	"os"
 	"time"
 
+	"github.com/knadh/koanf"
 	"github.com/labstack/echo/v4"
 	"github.com/nobleach/cobaltcms/internal/storage"
 	"github.com/rs/zerolog"
 )
 
 type APIServer struct {
-	listenAddr string
-	store      storage.Storage
-	logger     zerolog.Logger
+	config koanf.Koanf
+	store  storage.Storage
+	logger zerolog.Logger
 }
 
 type Health struct {
@@ -31,11 +32,11 @@ type Content struct {
 	PublishEnd         time.Time   `json:"publishEnd"`
 }
 
-func NewApiServer(listenAddr string, store storage.Storage) *APIServer {
+func NewApiServer(config *koanf.Koanf, store storage.Storage) *APIServer {
 	return &APIServer{
-		listenAddr: listenAddr,
-		store:      store,
-		logger:     zerolog.New(os.Stderr),
+		config: *config,
+		store:  store,
+		logger: zerolog.New(os.Stderr),
 	}
 }
 
@@ -46,7 +47,9 @@ func (s *APIServer) Run() {
 	e.GET("/health", s.handleGetHealthcheck)
 	e.GET("/published-statuses", s.handleGetPublishedStatuses)
 
-	e.Logger.Fatal(e.Start(s.listenAddr))
+	port := s.config.String("server.port")
+
+	e.Logger.Fatal(e.Start(port))
 }
 
 func (s *APIServer) handleGetHealthcheck(c echo.Context) error {

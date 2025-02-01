@@ -3,6 +3,7 @@ package storage
 import (
 	"context"
 	"errors"
+	"os"
 
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/rs/zerolog/log"
@@ -20,8 +21,7 @@ type PostgresStore struct {
 }
 
 func NewPostgresStore() (*PostgresStore, error) {
-	// TODO get this into an env var or config
-	connStr := "postgres://cobaltcms:cobaltcmspass@localhost:5432/cobaltcms?sslmode=disable"
+	connStr := os.Getenv("DATABASE_URL")
 	poolConfig, err := pgxpool.ParseConfig(connStr)
 
 	if err != nil {
