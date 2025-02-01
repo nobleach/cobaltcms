@@ -1,6 +1,6 @@
 services:
-  database:
-    container_name: database
+  cobaltcms-db:
+    container_name: cobaltcms-db
     image: postgres:16.2-alpine
     ports:
       - "5432:5432"
@@ -11,9 +11,9 @@ services:
       POSTGRES_PASSWORD: "cobaltcmspass"
       POSTGRES_DB: "cobaltcms"
 
-  pgadmin:
+  cobaltcms-pgadmin:
     image: dpage/pgadmin4
-    container_name: pgadmin4
+    container_name: cobaltcms-pgadmin
     environment:
       PGADMIN_DEFAULT_EMAIL: "admin@cobaltcms.com"
       PGADMIN_DEFAULT_PASSWORD: "cobaltpass"
