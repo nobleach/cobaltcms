@@ -12,6 +12,56 @@ import (
 	types "github.com/nobleach/cobaltcms/internal/types"
 )
 
+const getPublishedContentById = `-- name: GetPublishedContentById :many
+SELECT id, content_type, name, body, extended_attributes 
+FROM contents
+WHERE id = $1
+OR parent_id = $1
+AND published_status = 'PUBLISHED'
+OR published_status = 'SCHEDULED'
+AND  publish_end >= TO_TIMESTAMP($2, 'YYYY-MM-DD HH24:MI:ss')
+AND  publish_start <=  TO_TIMESTAMP($2, 'YYYY-MM-DD HH24:MI:ss')
+`
+
+type GetPublishedContentByIdParams struct {
+	ID          uuid.UUID
+	ToTimestamp string
+}
+
+type GetPublishedContentByIdRow struct {
+	ID                 uuid.UUID
+	ContentType        string
+	Name               string
+	Body               types.JSONB
+	ExtendedAttributes types.JSONB
+}
+
+func (q *Queries) GetPublishedContentById(ctx context.Context, arg GetPublishedContentByIdParams) ([]GetPublishedContentByIdRow, error) {
+	rows, err := q.db.Query(ctx, getPublishedContentById, arg.ID, arg.ToTimestamp)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetPublishedContentByIdRow
+	for rows.Next() {
+		var i GetPublishedContentByIdRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.ContentType,
+			&i.Name,
+			&i.Body,
+			&i.ExtendedAttributes,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const listAllPublishedStatuses = `-- name: ListAllPublishedStatuses :many
 SELECT id, status
 FROM published_statuses

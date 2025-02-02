@@ -17,3 +17,6 @@ build:
 
 run: build
 	PORT=$(PORT) ./bin/server
+
+watch:
+	./bin/air
