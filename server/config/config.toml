@@ -4,6 +4,4 @@
 # Let's do it here
 port = ":8080"
 
-[db]
-
 

@@ -9,6 +9,16 @@ sql:
         out: "internal/storage"
         sql_package: "pgx/v5"
         overrides:
+          - column: "contents.body"
+            go_type:
+              import: "github.com/nobleach/cobaltcms/internal/types"
+              package: "types"
+              type: "JSONB"
+          - column: "contents.extended_attributes"
+            go_type:
+              import: "github.com/nobleach/cobaltcms/internal/types"
+              package: "types"
+              type: "JSONB"
           - db_type: "uuid"
             go_type: "github.com/google/uuid.UUID"
           - db_type: "uuid"

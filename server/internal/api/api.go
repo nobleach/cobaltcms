@@ -3,11 +3,11 @@ package api
 import (
 	"net/http"
 	"os"
-	"time"
 
 	"github.com/knadh/koanf"
 	"github.com/labstack/echo/v4"
 	"github.com/nobleach/cobaltcms/internal/storage"
+	"github.com/nobleach/cobaltcms/internal/types"
 	"github.com/rs/zerolog"
 )
 
@@ -21,15 +21,12 @@ type Health struct {
 	Status string `json:"status"`
 }
 
-type Content struct {
+type PublishedContent struct {
 	Id                 string      `json:"id"`
 	ContentType        string      `json:"contentType"`
 	Name               string      `json:"name"`
-	Body               interface{} `json:"body"`
-	ExtendedAttributes interface{} `json:"extendedAttributes"`
-	PublishedStatus    string      `json:"publishedStatus"`
-	PublishStart       time.Time   `json:"publishStart"`
-	PublishEnd         time.Time   `json:"publishEnd"`
+	Body               types.JSONB `json:"body"`
+	ExtendedAttributes types.JSONB `json:"extendedAttributes"`
 }
 
 func NewApiServer(config *koanf.Koanf, store storage.Storage) *APIServer {
@@ -46,6 +43,7 @@ func (s *APIServer) Run() {
 
 	e.GET("/health", s.handleGetHealthcheck)
 	e.GET("/published-statuses", s.handleGetPublishedStatuses)
+	e.GET("/published-content", s.handleGetPublishedForDate)
 
 	port := s.config.String("server.port")
 
@@ -71,4 +69,28 @@ func (s *APIServer) handleGetPublishedStatuses(c echo.Context) error {
 
 type InvalidInputError struct {
 	Message string `json:"message"`
+}
+
+func (s *APIServer) handleGetPublishedForDate(c echo.Context) error {
+	res, err := s.store.GetPublishedContentForDate("2025-02-01 13:00:00")
+
+	if err != nil {
+		s.logger.Error().Msg("Could not fetch content")
+	}
+
+	var publishedContents []PublishedContent
+
+	for _, element := range res {
+		content := PublishedContent{
+			Id:                 element.ID.String(),
+			ContentType:        element.ContentType,
+			Name:               element.Name,
+			Body:               element.Body,
+			ExtendedAttributes: element.ExtendedAttributes,
+		}
+
+		publishedContents = append(publishedContents, content)
+	}
+
+	return c.JSON(http.StatusOK, publishedContents)
 }

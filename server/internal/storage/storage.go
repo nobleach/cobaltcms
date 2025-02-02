@@ -13,6 +13,7 @@ import (
 
 type Storage interface {
 	GetPublishedStatuses() ([]types.PublishedStatus, error)
+	GetPublishedContentForDate(dateTime string) ([]ListPublishedContentForDateTimeRow, error)
 }
 
 type PostgresStore struct {
@@ -67,4 +68,18 @@ func (s *PostgresStore) GetPublishedStatuses() ([]types.PublishedStatus, error) 
 	}
 
 	return statuses, nil
+}
+
+func (s *PostgresStore) GetPublishedContentForDate(dateTime string) ([]ListPublishedContentForDateTimeRow, error) {
+	ctx := context.Background()
+
+	publishedContentList, err := s.queries.ListPublishedContentForDateTime(ctx, dateTime)
+
+	if err != nil {
+		log.Fatal().Msgf("Could not fetch published content: %v", err)
+
+		return nil, err
+	}
+
+	return publishedContentList, nil
 }

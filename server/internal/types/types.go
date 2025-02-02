@@ -1,6 +1,8 @@
 package types
 
-import "github.com/jackc/pgx/v5/pgtype"
+import (
+	"github.com/jackc/pgx/v5/pgtype"
+)
 
 type CalendarEventSummaryResponse struct {
 	CalendarId   string      `json:"calendarId"`
@@ -18,3 +20,5 @@ type PublishedStatus struct {
 	Id     string `json:"id"`
 	Status string `json:"status"`
 }
+
+type JSONB map[string]interface{}

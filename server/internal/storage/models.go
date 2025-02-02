@@ -7,14 +7,15 @@ package storage
 import (
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
+	types "github.com/nobleach/cobaltcms/internal/types"
 )
 
 type Content struct {
 	ID                 uuid.UUID
 	ContentType        string
 	Name               string
-	Body               []byte
-	ExtendedAttributes []byte
+	Body               types.JSONB
+	ExtendedAttributes types.JSONB
 	PublishedStatus    string
 	PublishStart       pgtype.Timestamptz
 	PublishEnd         pgtype.Timestamptz

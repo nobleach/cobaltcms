@@ -9,6 +9,7 @@ import (
 	"context"
 
 	"github.com/google/uuid"
+	types "github.com/nobleach/cobaltcms/internal/types"
 )
 
 const listAllPublishedStatuses = `-- name: ListAllPublishedStatuses :many
@@ -31,6 +32,49 @@ func (q *Queries) ListAllPublishedStatuses(ctx context.Context) ([]ListAllPublis
 	for rows.Next() {
 		var i ListAllPublishedStatusesRow
 		if err := rows.Scan(&i.ID, &i.Status); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listPublishedContentForDateTime = `-- name: ListPublishedContentForDateTime :many
+SELECT id, content_type, name, body, extended_attributes 
+FROM contents
+WHERE published_status = 'PUBLISHED'
+OR published_status = 'SCHEDULED'
+AND  publish_end >= TO_TIMESTAMP($1, 'YYYY-MM-DD HH24:MI:ss')
+AND  publish_start <=  TO_TIMESTAMP($1, 'YYYY-MM-DD HH24:MI:ss')
+`
+
+type ListPublishedContentForDateTimeRow struct {
+	ID                 uuid.UUID
+	ContentType        string
+	Name               string
+	Body               types.JSONB
+	ExtendedAttributes types.JSONB
+}
+
+func (q *Queries) ListPublishedContentForDateTime(ctx context.Context, toTimestamp string) ([]ListPublishedContentForDateTimeRow, error) {
+	rows, err := q.db.Query(ctx, listPublishedContentForDateTime, toTimestamp)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []ListPublishedContentForDateTimeRow
+	for rows.Next() {
+		var i ListPublishedContentForDateTimeRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.ContentType,
+			&i.Name,
+			&i.Body,
+			&i.ExtendedAttributes,
+		); err != nil {
 			return nil, err
 		}
 		items = append(items, i)
