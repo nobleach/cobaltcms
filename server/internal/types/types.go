@@ -21,4 +21,6 @@ type PublishedStatus struct {
 	Status string `json:"status"`
 }
 
+// TODO: We may actually care about the shape of these columns
+// if so, we need to create structs to represent the fields
 type JSONB map[string]interface{}

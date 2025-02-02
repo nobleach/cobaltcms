@@ -72,7 +72,9 @@ type InvalidInputError struct {
 }
 
 func (s *APIServer) handleGetPublishedForDate(c echo.Context) error {
-	res, err := s.store.GetPublishedContentForDate("2025-02-01 13:00:00")
+	date := c.QueryParam("date")
+	time := c.QueryParam("time")
+	res, err := s.store.GetPublishedContentForDate(date + " " + time)
 
 	if err != nil {
 		s.logger.Error().Msg("Could not fetch content")
