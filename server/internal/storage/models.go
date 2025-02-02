@@ -21,7 +21,6 @@ type Content struct {
 	PublishEnd         pgtype.Timestamptz
 	CreatedTs          pgtype.Timestamptz
 	UpdatedTs          pgtype.Timestamptz
-	ParentID           uuid.NullUUID
 }
 
 type ContentType struct {
@@ -29,6 +28,14 @@ type ContentType struct {
 	TypeName  string
 	CreatedTs pgtype.Timestamptz
 	UpdatedTs pgtype.Timestamptz
+}
+
+type ContentsContent struct {
+	ID            uuid.UUID
+	PageContentID uuid.UUID
+	ContentID     uuid.UUID
+	CreatedTs     pgtype.Timestamptz
+	UpdatedTs     pgtype.Timestamptz
 }
 
 type PublishedStatus struct {

@@ -5,6 +5,7 @@ import (
 	"errors"
 	"os"
 
+	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/rs/zerolog/log"
 
@@ -14,6 +15,7 @@ import (
 type Storage interface {
 	GetPublishedStatuses() ([]types.PublishedStatus, error)
 	GetPublishedContentForDate(dateTime string) ([]ListPublishedContentForDateTimeRow, error)
+	GetPublishedContentForId(id string, dateTime string) ([]GetPublishedContentByIdRow, error)
 }
 
 type PostgresStore struct {
@@ -74,6 +76,31 @@ func (s *PostgresStore) GetPublishedContentForDate(dateTime string) ([]ListPubli
 	ctx := context.Background()
 
 	publishedContentList, err := s.queries.ListPublishedContentForDateTime(ctx, dateTime)
+
+	if err != nil {
+		log.Fatal().Msgf("Could not fetch published content: %v", err)
+
+		return nil, err
+	}
+
+	return publishedContentList, nil
+}
+
+func (s *PostgresStore) GetPublishedContentForId(id string, dateTime string) ([]GetPublishedContentByIdRow, error) {
+	ctx := context.Background()
+
+	pageIdUUID, err := uuid.Parse(id)
+	if err != nil {
+		log.Error().Msgf("Could not parse UUID from string")
+		return nil, ErrInvalidInput
+	}
+
+	params := GetPublishedContentByIdParams{
+		ToTimestamp:   dateTime,
+		PageContentID: pageIdUUID,
+	}
+
+	publishedContentList, err := s.queries.GetPublishedContentById(ctx, params)
 
 	if err != nil {
 		log.Fatal().Msgf("Could not fetch published content: %v", err)

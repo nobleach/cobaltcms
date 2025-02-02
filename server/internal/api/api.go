@@ -44,6 +44,7 @@ func (s *APIServer) Run() {
 	e.GET("/health", s.handleGetHealthcheck)
 	e.GET("/published-statuses", s.handleGetPublishedStatuses)
 	e.GET("/published-content", s.handleGetPublishedForDate)
+	e.GET("/published-page", s.handleGetPublishedForId)
 
 	port := s.config.String("server.port")
 
@@ -93,6 +94,38 @@ func (s *APIServer) handleGetPublishedForDate(c echo.Context) error {
 
 		publishedContents = append(publishedContents, content)
 	}
+
+	return c.JSON(http.StatusOK, publishedContents)
+}
+
+type PublishedPageContent struct {
+	Id      string                 `json:"id"`
+	Content map[string]interface{} `json:"content"`
+}
+
+func (s *APIServer) handleGetPublishedForId(c echo.Context) error {
+	// TODO: We need to get this from the client as it'll likely
+	// be in another timezone
+	date := c.QueryParam("date")
+	time := c.QueryParam("time")
+	pageId := c.QueryParam("id")
+	res, err := s.store.GetPublishedContentForId(pageId, date+" "+time)
+
+	if err != nil {
+		s.logger.Error().Msg("Could not fetch content")
+	}
+
+	publishedContents := PublishedPageContent{
+		Id: pageId,
+	}
+
+	contentMap := make(map[string]interface{})
+
+	for _, element := range res {
+		contentMap[element.Name.String] = element.Body
+	}
+
+	publishedContents.Content = contentMap
 
 	return c.JSON(http.StatusOK, publishedContents)
 }

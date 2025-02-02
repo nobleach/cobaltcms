@@ -9,35 +9,37 @@ import (
 	"context"
 
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgtype"
 	types "github.com/nobleach/cobaltcms/internal/types"
 )
 
 const getPublishedContentById = `-- name: GetPublishedContentById :many
-SELECT id, content_type, name, body, extended_attributes 
-FROM contents
-WHERE id = $1
-OR parent_id = $1
-AND published_status = 'PUBLISHED'
-OR published_status = 'SCHEDULED'
-AND  publish_end >= TO_TIMESTAMP($2, 'YYYY-MM-DD HH24:MI:ss')
-AND  publish_start <=  TO_TIMESTAMP($2, 'YYYY-MM-DD HH24:MI:ss')
+SELECT c.id, c.content_type, c.name, c.body, c.extended_attributes
+FROM contents_contents cc
+LEFT JOIN contents c
+ON cc.content_id = c.id
+WHERE cc.page_content_id = $1
+AND c.published_status = 'PUBLISHED'
+OR c.published_status = 'SCHEDULED'
+AND  c.publish_end >= TO_TIMESTAMP($2, 'YYYY-MM-DD HH24:MI:ss')
+AND  c.publish_start <=  TO_TIMESTAMP($2, 'YYYY-MM-DD HH24:MI:ss')
 `
 
 type GetPublishedContentByIdParams struct {
-	ID          uuid.UUID
-	ToTimestamp string
+	PageContentID uuid.UUID
+	ToTimestamp   string
 }
 
 type GetPublishedContentByIdRow struct {
-	ID                 uuid.UUID
-	ContentType        string
-	Name               string
+	ID                 uuid.NullUUID
+	ContentType        pgtype.Text
+	Name               pgtype.Text
 	Body               types.JSONB
 	ExtendedAttributes types.JSONB
 }
 
 func (q *Queries) GetPublishedContentById(ctx context.Context, arg GetPublishedContentByIdParams) ([]GetPublishedContentByIdRow, error) {
-	rows, err := q.db.Query(ctx, getPublishedContentById, arg.ID, arg.ToTimestamp)
+	rows, err := q.db.Query(ctx, getPublishedContentById, arg.PageContentID, arg.ToTimestamp)
 	if err != nil {
 		return nil, err
 	}
