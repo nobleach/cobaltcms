@@ -136,3 +136,26 @@ func (q *Queries) ListPublishedContentForDateTime(ctx context.Context, toTimesta
 	}
 	return items, nil
 }
+
+const saveContentRelations = `-- name: SaveContentRelations :execlastid
+INSERT INTO contents_contents (page_content_id, content_id, created_ts, updated_ts)
+VALUES ($1, $2, now(), now())
+`
+
+type SaveContentRelationsParams struct {
+	PageContentID uuid.UUID
+	ContentID     uuid.UUID
+}
+
+const saveNewContent = `-- name: SaveNewContent :execlastid
+INSERT INTO contents (content_type, name, body, extended_attributes, published_status, created_ts, updated_ts)
+VALUES ($1, $2, $3, $4, $5, now(), now())
+`
+
+type SaveNewContentParams struct {
+	ContentType        string
+	Name               string
+	Body               types.JSONB
+	ExtendedAttributes types.JSONB
+	PublishedStatus    string
+}

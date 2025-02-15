@@ -29,6 +29,20 @@ type PublishedContent struct {
 	ExtendedAttributes types.JSONB `json:"extendedAttributes"`
 }
 
+type NewPublishedContent struct {
+	ContentType        string      `json:"contentType"`
+	Name               string      `json:"name"`
+	Body               types.JSONB `json:"body"`
+	ExtendedAttributes types.JSONB `json:"extendedAttributes"`
+}
+
+type NewPublishedContentCollection struct {
+	ContentType        string                `json:"contentType"`
+	Name               string                `json:"name"`
+	Body               []NewPublishedContent `json:"body"`
+	ExtendedAttributes types.JSONB           `json:"extendedAttributes"`
+}
+
 func NewApiServer(config *koanf.Koanf, store storage.Storage) *APIServer {
 	return &APIServer{
 		config: *config,
@@ -45,6 +59,7 @@ func (s *APIServer) Run() {
 	e.GET("/published-statuses", s.handleGetPublishedStatuses)
 	e.GET("/published-content", s.handleGetPublishedForDate)
 	e.GET("/published-page", s.handleGetPublishedForId)
+	e.POST("/published-content", s.handlePostPublishedContent)
 
 	port := s.config.String("server.port")
 
@@ -128,4 +143,16 @@ func (s *APIServer) handleGetPublishedForId(c echo.Context) error {
 	publishedContents.Content = contentMap
 
 	return c.JSON(http.StatusOK, publishedContents)
+}
+
+func (s *APIServer) handlePostPublishedContent(c echo.Context) error {
+	var content PublishedContent
+	if err := c.Bind(&content); err != nil {
+		s.logger.Error().Msg("Invalid input")
+		return c.JSON(http.StatusBadRequest, InvalidInputError{Message: "Invalid input"})
+	}
+
+	// TODO: Store this in the database
+
+	return c.JSON(http.StatusOK, content)
 }
