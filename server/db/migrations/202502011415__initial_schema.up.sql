@@ -5,7 +5,7 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
 CREATE TABLE IF NOT EXISTS public.contents (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    content_type TEXT NOT NULL,
+    fragment_type TEXT NOT NULL,
     name TEXT NOT NULL,
     body JSONB DEFAULT '{}'::jsonb,
     extended_attributes JSONB DEFAULT '{}'::jsonb,
@@ -16,7 +16,7 @@ CREATE TABLE IF NOT EXISTS public.contents (
     updated_ts TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE TABLE IF NOT EXISTS public.content_types (
+CREATE TABLE IF NOT EXISTS public.fragment_types (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     type_name TEXT NOT NULL,
     created_ts TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,

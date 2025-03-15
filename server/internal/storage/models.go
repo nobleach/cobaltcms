@@ -12,7 +12,7 @@ import (
 
 type Content struct {
 	ID                 uuid.UUID
-	ContentType        string
+	FragmentType       string
 	Name               string
 	Body               types.JSONB
 	ExtendedAttributes types.JSONB
@@ -23,19 +23,19 @@ type Content struct {
 	UpdatedTs          pgtype.Timestamptz
 }
 
-type ContentType struct {
-	ID        uuid.UUID
-	TypeName  string
-	CreatedTs pgtype.Timestamptz
-	UpdatedTs pgtype.Timestamptz
-}
-
 type ContentsContent struct {
 	ID            uuid.UUID
 	PageContentID uuid.UUID
 	ContentID     uuid.UUID
 	CreatedTs     pgtype.Timestamptz
 	UpdatedTs     pgtype.Timestamptz
+}
+
+type FragmentType struct {
+	ID        uuid.UUID
+	TypeName  string
+	CreatedTs pgtype.Timestamptz
+	UpdatedTs pgtype.Timestamptz
 }
 
 type PublishedStatus struct {

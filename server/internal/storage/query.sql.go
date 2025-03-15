@@ -14,7 +14,7 @@ import (
 )
 
 const getPublishedContentById = `-- name: GetPublishedContentById :many
-SELECT c.id, c.content_type, c.name, c.body, c.extended_attributes
+SELECT c.id, c.fragment_type, c.name, c.body, c.extended_attributes
 FROM contents_contents cc
 LEFT JOIN contents c
 ON cc.content_id = c.id
@@ -32,7 +32,7 @@ type GetPublishedContentByIdParams struct {
 
 type GetPublishedContentByIdRow struct {
 	ID                 uuid.NullUUID
-	ContentType        pgtype.Text
+	FragmentType       pgtype.Text
 	Name               pgtype.Text
 	Body               types.JSONB
 	ExtendedAttributes types.JSONB
@@ -49,7 +49,7 @@ func (q *Queries) GetPublishedContentById(ctx context.Context, arg GetPublishedC
 		var i GetPublishedContentByIdRow
 		if err := rows.Scan(
 			&i.ID,
-			&i.ContentType,
+			&i.FragmentType,
 			&i.Name,
 			&i.Body,
 			&i.ExtendedAttributes,
@@ -95,7 +95,7 @@ func (q *Queries) ListAllPublishedStatuses(ctx context.Context) ([]ListAllPublis
 }
 
 const listPublishedContentForDateTime = `-- name: ListPublishedContentForDateTime :many
-SELECT id, content_type, name, body, extended_attributes 
+SELECT id, fragment_type, name, body, extended_attributes 
 FROM contents
 WHERE published_status = 'PUBLISHED'
 OR published_status = 'SCHEDULED'
@@ -105,7 +105,7 @@ AND  publish_start <=  TO_TIMESTAMP($1, 'YYYY-MM-DD HH24:MI:ss')
 
 type ListPublishedContentForDateTimeRow struct {
 	ID                 uuid.UUID
-	ContentType        string
+	FragmentType       string
 	Name               string
 	Body               types.JSONB
 	ExtendedAttributes types.JSONB
@@ -122,7 +122,7 @@ func (q *Queries) ListPublishedContentForDateTime(ctx context.Context, toTimesta
 		var i ListPublishedContentForDateTimeRow
 		if err := rows.Scan(
 			&i.ID,
-			&i.ContentType,
+			&i.FragmentType,
 			&i.Name,
 			&i.Body,
 			&i.ExtendedAttributes,
@@ -148,12 +148,12 @@ type SaveContentRelationsParams struct {
 }
 
 const saveNewContent = `-- name: SaveNewContent :execlastid
-INSERT INTO contents (content_type, name, body, extended_attributes, published_status, created_ts, updated_ts)
+INSERT INTO contents (fragment_type, name, body, extended_attributes, published_status, created_ts, updated_ts)
 VALUES ($1, $2, $3, $4, $5, now(), now())
 `
 
 type SaveNewContentParams struct {
-	ContentType        string
+	FragmentType       string
 	Name               string
 	Body               types.JSONB
 	ExtendedAttributes types.JSONB
