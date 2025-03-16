@@ -21,9 +21,10 @@ OR c.published_status = 'SCHEDULED'
 AND  c.publish_end >= TO_TIMESTAMP($2, 'YYYY-MM-DD HH24:MI:ss')
 AND  c.publish_start <=  TO_TIMESTAMP($2, 'YYYY-MM-DD HH24:MI:ss');
 
--- name: SaveNewContent :execlastid
-INSERT INTO contents (fragment_type, name, body, extended_attributes, published_status, created_ts, updated_ts)
-VALUES ($1, $2, $3, $4, $5, now(), now());
+-- name: SaveNewContent :one
+INSERT INTO contents (fragment_type, name, body, extended_attributes, published_status, publish_start, publish_end, created_ts, updated_ts)
+VALUES ($1, $2, $3, $4, $5, $6, $7, now(), now())
+RETURNING id;
 
 -- name: SaveContentRelations :execlastid
 INSERT INTO contents_contents (page_content_id, content_id, created_ts, updated_ts)

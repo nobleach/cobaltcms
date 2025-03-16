@@ -1,0 +1,18 @@
+POST http://localhost:8080/content
+accept: application/json
+Content-Type: application/json
+
+{
+  "fragmentType": "section",
+  "name": "BodyCopy",
+  "body": {
+    "content": "<p>There's a lot of stuff to say today.</p>",
+    "contentType": "html"
+  },
+  "extendedAttributes": {},
+  "publishedStatus": "PUBLISHED",
+  "publishStartDateTime": null,
+  "publishEndDateTime": null
+}
+
+###

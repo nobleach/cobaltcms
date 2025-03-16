@@ -4,8 +4,10 @@ import (
 	"context"
 	"errors"
 	"os"
+	"time"
 
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/rs/zerolog/log"
 
@@ -16,6 +18,7 @@ type Storage interface {
 	GetPublishedStatuses() ([]types.PublishedStatus, error)
 	GetPublishedContentForDate(dateTime string) ([]ListPublishedContentForDateTimeRow, error)
 	GetPublishedContentForId(id string, dateTime string) ([]GetPublishedContentByIdRow, error)
+	SaveContent(newContent types.NewContent) (string, error)
 }
 
 type PostgresStore struct {
@@ -109,4 +112,39 @@ func (s *PostgresStore) GetPublishedContentForId(id string, dateTime string) ([]
 	}
 
 	return publishedContentList, nil
+}
+
+func (s *PostgresStore) SaveContent(newContent types.NewContent) (string, error) {
+	// Validate input for SCHEDULED content
+	if newContent.PublishedStatus == "SCHEDULED" {
+		if newContent.PublishStartDateTime == "" || newContent.PublishEndDateTime == "" {
+			return "", errors.New("SCHEDULED content must have both start and end date times")
+		}
+	}
+
+	ctx := context.Background()
+	dateFormat := "2021-11-22T12:34:56"
+	startDate, err := time.Parse(dateFormat, newContent.PublishStartDateTime)
+	endDate, err := time.Parse(dateFormat, newContent.PublishEndDateTime)
+
+	// Prepare parameters for the query
+	params := SaveNewContentParams{
+		FragmentType:       newContent.FragmentType,
+		Name:               newContent.Name,
+		Body:               newContent.Body,
+		ExtendedAttributes: newContent.ExtendedAttributes,
+		PublishedStatus:    newContent.PublishedStatus,
+		PublishStart:       pgtype.Timestamptz{Time: startDate, Valid: true},
+		PublishEnd:         pgtype.Timestamptz{Time: endDate, Valid: true},
+	}
+
+	// Execute the query to save the content
+	uuid, err := s.queries.SaveNewContent(ctx, params)
+	if err != nil {
+		log.Error().Err(err).Msg("Failed to save content")
+		return "", err
+	}
+	//
+	// return contentID.String(), nil
+	return uuid.String(), nil
 }

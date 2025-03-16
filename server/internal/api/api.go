@@ -23,31 +23,17 @@ type Health struct {
 
 type PublishedContent struct {
 	Id                 string      `json:"id"`
-	ContentType        string      `json:"contentType"`
+	FragmentType       string      `json:"fragmentType"`
 	Name               string      `json:"name"`
 	Body               types.JSONB `json:"body"`
 	ExtendedAttributes types.JSONB `json:"extendedAttributes"`
-}
-
-type NewPublishedContent struct {
-	ContentType        string      `json:"contentType"`
-	Name               string      `json:"name"`
-	Body               types.JSONB `json:"body"`
-	ExtendedAttributes types.JSONB `json:"extendedAttributes"`
-}
-
-type NewPublishedContentCollection struct {
-	ContentType        string                `json:"contentType"`
-	Name               string                `json:"name"`
-	Body               []NewPublishedContent `json:"body"`
-	ExtendedAttributes types.JSONB           `json:"extendedAttributes"`
 }
 
 func NewApiServer(config *koanf.Koanf, store storage.Storage) *APIServer {
 	return &APIServer{
 		config: *config,
 		store:  store,
-		logger: zerolog.New(os.Stderr),
+		logger: zerolog.New(os.Stdout),
 	}
 }
 
@@ -57,9 +43,9 @@ func (s *APIServer) Run() {
 
 	e.GET("/health", s.handleGetHealthcheck)
 	e.GET("/published-statuses", s.handleGetPublishedStatuses)
-	e.GET("/published-content", s.handleGetPublishedForDate)
 	e.GET("/published-page", s.handleGetPublishedForId)
-	e.POST("/published-content", s.handlePostPublishedContent)
+	e.GET("/published-content", s.handleGetPublishedForDate)
+	e.POST("/content", s.handlePostContent)
 
 	port := s.config.String("server.port")
 
@@ -101,7 +87,7 @@ func (s *APIServer) handleGetPublishedForDate(c echo.Context) error {
 	for _, element := range res {
 		content := PublishedContent{
 			Id:                 element.ID.String(),
-			ContentType:        element.ContentType,
+			FragmentType:       element.FragmentType,
 			Name:               element.Name,
 			Body:               element.Body,
 			ExtendedAttributes: element.ExtendedAttributes,
@@ -114,8 +100,8 @@ func (s *APIServer) handleGetPublishedForDate(c echo.Context) error {
 }
 
 type PublishedPageContent struct {
-	Id      string                 `json:"id"`
-	Content map[string]interface{} `json:"content"`
+	Id      string         `json:"id"`
+	Content map[string]any `json:"content"`
 }
 
 func (s *APIServer) handleGetPublishedForId(c echo.Context) error {
@@ -134,7 +120,7 @@ func (s *APIServer) handleGetPublishedForId(c echo.Context) error {
 		Id: pageId,
 	}
 
-	contentMap := make(map[string]interface{})
+	contentMap := make(map[string]any)
 
 	for _, element := range res {
 		contentMap[element.Name.String] = element.Body
@@ -145,14 +131,22 @@ func (s *APIServer) handleGetPublishedForId(c echo.Context) error {
 	return c.JSON(http.StatusOK, publishedContents)
 }
 
-func (s *APIServer) handlePostPublishedContent(c echo.Context) error {
-	var content PublishedContent
+func (s *APIServer) handlePostContent(c echo.Context) error {
+	var content types.NewContent
 	if err := c.Bind(&content); err != nil {
 		s.logger.Error().Msg("Invalid input")
 		return c.JSON(http.StatusBadRequest, InvalidInputError{Message: "Invalid input"})
 	}
 
-	// TODO: Store this in the database
+	// TODO: Handle err
+	createdUuid, _ := s.store.SaveContent(content)
+	type NewUuid struct {
+		Uuid string `json:"uuid"`
+	}
 
-	return c.JSON(http.StatusOK, content)
+	newUuid := NewUuid{
+		Uuid: createdUuid,
+	}
+
+	return c.JSON(http.StatusOK, newUuid)
 }

@@ -147,9 +147,10 @@ type SaveContentRelationsParams struct {
 	ContentID     uuid.UUID
 }
 
-const saveNewContent = `-- name: SaveNewContent :execlastid
-INSERT INTO contents (fragment_type, name, body, extended_attributes, published_status, created_ts, updated_ts)
-VALUES ($1, $2, $3, $4, $5, now(), now())
+const saveNewContent = `-- name: SaveNewContent :one
+INSERT INTO contents (fragment_type, name, body, extended_attributes, published_status, publish_start, publish_end, created_ts, updated_ts)
+VALUES ($1, $2, $3, $4, $5, $6, $7, now(), now())
+RETURNING id
 `
 
 type SaveNewContentParams struct {
@@ -158,4 +159,21 @@ type SaveNewContentParams struct {
 	Body               types.JSONB
 	ExtendedAttributes types.JSONB
 	PublishedStatus    string
+	PublishStart       pgtype.Timestamptz
+	PublishEnd         pgtype.Timestamptz
+}
+
+func (q *Queries) SaveNewContent(ctx context.Context, arg SaveNewContentParams) (uuid.UUID, error) {
+	row := q.db.QueryRow(ctx, saveNewContent,
+		arg.FragmentType,
+		arg.Name,
+		arg.Body,
+		arg.ExtendedAttributes,
+		arg.PublishedStatus,
+		arg.PublishStart,
+		arg.PublishEnd,
+	)
+	var id uuid.UUID
+	err := row.Scan(&id)
+	return id, err
 }

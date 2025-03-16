@@ -16,6 +16,16 @@ type CalendarEventSummaryResponse struct {
 	LocationName string      `json:"locationName"`
 }
 
+type NewContent struct {
+	FragmentType         string `json:"fragmentType"`
+	Name                 string `json:"name"`
+	Body                 JSONB  `json:"body"`
+	ExtendedAttributes   JSONB  `json:"extendedAttributes"`
+	PublishedStatus      string `json:"publishedStatus"`
+	PublishStartDateTime string `json:"publishStartDateTime"`
+	PublishEndDateTime   string `json:"publishEndDateTime"`
+}
+
 type PublishedStatus struct {
 	Id     string `json:"id"`
 	Status string `json:"status"`
