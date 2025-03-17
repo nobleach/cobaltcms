@@ -26,6 +26,17 @@ type NewContent struct {
 	PublishEndDateTime   string `json:"publishEndDateTime"`
 }
 
+type UpdateContent struct {
+	Id                   string `json:"id"`
+	FragmentType         string `json:"fragmentType"`
+	Name                 string `json:"name"`
+	Body                 JSONB  `json:"body"`
+	ExtendedAttributes   JSONB  `json:"extendedAttributes"`
+	PublishedStatus      string `json:"publishedStatus"`
+	PublishStartDateTime string `json:"publishStartDateTime"`
+	PublishEndDateTime   string `json:"publishEndDateTime"`
+}
+
 type PublishedStatus struct {
 	Id     string `json:"id"`
 	Status string `json:"status"`

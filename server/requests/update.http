@@ -1,0 +1,60 @@
+PUT http://localhost:8080/content
+accept: application/json
+Content-Type: application/json
+
+{
+  "id": "eaa40957-76f4-4cb4-b023-429795013e4d",
+  "fragmentType": "SECTION",
+  "name": "Sale Hero",
+  "body": {
+    "content": "<section class\"sale-section\">Huge sale UPDATED</section>",
+    "contentType": "html"
+  },
+  "extendedAttributes": {},
+  "publishedStatus": "SCHEDULED",
+  "publishStartDateTime": "2025-03-16 13:30:00",
+  "publishEndDateTime": "2025-04-16 13:30:00"
+}
+
+###
+
+PUT http://localhost:8080/content
+accept: application/json
+Content-Type: application/json
+
+{
+  "id": "",
+  "fragmentType": "SECTION",
+  "name": "BodyCopy",
+  "body": {
+    "content": "<p>There's a lot of stuff to say today.</p>",
+    "contentType": "html"
+  },
+  "extendedAttributes": {},
+  "publishedStatus": "SCHEDULED",
+  "publishStartDateTime": "2025-03-16 13:30:00",
+  "publishEndDateTime": ""
+}
+
+###
+
+PUT http://localhost:8080/content
+accept: application/json
+Content-Type: application/json
+
+{
+  "id": "df02bbe1-8458-46e4-8fba-146399d685b9",
+  "fragmentType": "SECTION",
+  "name": "BodyCopy",
+  "body": {
+    "content": "<p>This is straight published and now updated</p>",
+    "contentType": "html"
+  },
+  "extendedAttributes": {},
+  "publishedStatus": "PUBLISHED",
+  "publishStartDateTime": null,
+  "publishEndDateTime": null
+}
+
+###
+

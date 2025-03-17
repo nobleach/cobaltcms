@@ -18,6 +18,7 @@ type Storage interface {
 	GetPublishedContentForDate(dateTime string) ([]ListPublishedContentForDateTimeRow, error)
 	GetPublishedContentForId(id string, dateTime string) ([]GetPublishedContentByIdRow, error)
 	SaveContent(newContent types.NewContent) (string, error)
+	UpdateContent(updateContent types.UpdateContent) (types.UpdateContent, error)
 }
 
 type PostgresStore struct {
@@ -165,4 +166,82 @@ func (s *PostgresStore) SaveContent(newContent types.NewContent) (string, error)
 	//
 	// return contentID.String(), nil
 	return uuid.String(), nil
+}
+
+func (s *PostgresStore) UpdateContent(updateContent types.UpdateContent) (types.UpdateContent, error) {
+	// Validate input for SCHEDULED content
+	if updateContent.PublishedStatus == "SCHEDULED" {
+		log.Info().Msg("Fragment is SCHEDULED")
+		if updateContent.PublishStartDateTime == "" || updateContent.PublishEndDateTime == "" {
+			return types.UpdateContent{}, errors.New("SCHEDULED content must have both start and end date times")
+		}
+	}
+
+	ctx := context.Background()
+
+	id, err := uuid.Parse(updateContent.Id)
+	if err != nil {
+		return types.UpdateContent{}, errors.New("Could not parse id into a UUID")
+	}
+
+	// Prepare parameters for the query
+	params := UpdateContentParams{
+		ID:                 id,
+		FragmentType:       updateContent.FragmentType,
+		Name:               updateContent.Name,
+		Body:               updateContent.Body,
+		ExtendedAttributes: updateContent.ExtendedAttributes,
+		PublishedStatus:    updateContent.PublishedStatus,
+		PublishStart:       nil,
+		PublishEnd:         nil,
+	}
+
+	if updateContent.PublishedStatus == "SCHEDULED" {
+		dateFormat := "2006-01-02 15:04:05"
+		startDate, err := time.Parse(dateFormat, updateContent.PublishStartDateTime)
+		if err != nil {
+			log.Error().Err(err).Msg("Failed to parse start date time")
+			return types.UpdateContent{}, errors.New("Failed to parse time into valid timestamp")
+		}
+
+		endDate, err := time.Parse(dateFormat, updateContent.PublishEndDateTime)
+		if err != nil {
+			log.Error().Err(err).Msg("Failed to parse end date time")
+			return types.UpdateContent{}, errors.New("Failed to parse time into valid timestamp")
+		}
+
+		log.Debug().Msgf("Parsing start time %v as a timestamp", updateContent.PublishStartDateTime)
+		log.Debug().Msgf("Parsing end time %v as a timestamp", updateContent.PublishEndDateTime)
+
+		params.PublishStart = &startDate
+		params.PublishEnd = &endDate
+	}
+
+	// Execute the query to save the content
+	record, err := s.queries.UpdateContent(ctx, params)
+	if err != nil {
+		log.Error().Err(err).Msg("Failed to save content")
+		return types.UpdateContent{}, err
+	}
+
+	result := types.UpdateContent{
+		Id:                   record.ID.String(),
+		FragmentType:         record.FragmentType,
+		Name:                 record.Name,
+		Body:                 record.Body,
+		ExtendedAttributes:   record.ExtendedAttributes,
+		PublishedStatus:      record.PublishedStatus,
+		PublishStartDateTime: "",
+		PublishEndDateTime:   "",
+	}
+
+	if record.PublishStart != nil {
+		result.PublishStartDateTime = record.PublishStart.String()
+	}
+
+	if record.PublishEnd != nil {
+		result.PublishEndDateTime = record.PublishEnd.String()
+	}
+
+	return result, nil
 }

@@ -46,6 +46,7 @@ func (s *APIServer) Run() {
 	e.GET("/published-page", s.handleGetPublishedForId)
 	e.GET("/published-content", s.handleGetPublishedForDate)
 	e.POST("/content", s.handlePostContent)
+	e.PUT("/content", s.handlePutContent)
 
 	port := s.config.String("server.port")
 
@@ -161,4 +162,28 @@ func (s *APIServer) handlePostContent(c echo.Context) error {
 	}
 
 	return c.JSON(http.StatusOK, newUuid)
+}
+
+func (s *APIServer) handlePutContent(c echo.Context) error {
+	var content types.UpdateContent
+	if err := c.Bind(&content); err != nil {
+		s.logger.Error().Msgf("Invalid input %s", err)
+		return c.JSON(http.StatusBadRequest, InvalidInputError{Message: "Invalid input"})
+	}
+
+	// TODO: Handle err
+	updateResult, err := s.store.UpdateContent(content)
+	if err != nil {
+		type Error struct {
+			Error string `json:"error"`
+		}
+
+		newError := Error{
+			Error: err.Error(),
+		}
+
+		return c.JSON(http.StatusBadRequest, newError)
+	}
+
+	return c.JSON(http.StatusOK, &updateResult)
 }
