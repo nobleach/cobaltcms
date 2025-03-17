@@ -7,6 +7,7 @@ package storage
 
 import (
 	"context"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
@@ -159,8 +160,8 @@ type SaveNewContentParams struct {
 	Body               types.JSONB
 	ExtendedAttributes types.JSONB
 	PublishedStatus    string
-	PublishStart       pgtype.Timestamptz
-	PublishEnd         pgtype.Timestamptz
+	PublishStart       *time.Time
+	PublishEnd         *time.Time
 }
 
 func (q *Queries) SaveNewContent(ctx context.Context, arg SaveNewContentParams) (uuid.UUID, error) {

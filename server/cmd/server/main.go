@@ -13,7 +13,7 @@ import (
 var k = koanf.New(".")
 
 func main() {
-	zerolog.SetGlobalLevel(zerolog.InfoLevel)
+	zerolog.SetGlobalLevel(zerolog.DebugLevel)
 
 	if err := k.Load(file.Provider("config/config.toml"), toml.Parser()); err != nil {
 		log.Fatal().Err(err)

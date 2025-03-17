@@ -3,11 +3,11 @@ package storage
 import (
 	"context"
 	"errors"
+	"fmt"
 	"os"
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/rs/zerolog/log"
 
@@ -117,15 +117,13 @@ func (s *PostgresStore) GetPublishedContentForId(id string, dateTime string) ([]
 func (s *PostgresStore) SaveContent(newContent types.NewContent) (string, error) {
 	// Validate input for SCHEDULED content
 	if newContent.PublishedStatus == "SCHEDULED" {
+		log.Info().Msg("Fragment is SCHEDULED")
 		if newContent.PublishStartDateTime == "" || newContent.PublishEndDateTime == "" {
 			return "", errors.New("SCHEDULED content must have both start and end date times")
 		}
 	}
 
 	ctx := context.Background()
-	dateFormat := "2021-11-22T12:34:56"
-	startDate, err := time.Parse(dateFormat, newContent.PublishStartDateTime)
-	endDate, err := time.Parse(dateFormat, newContent.PublishEndDateTime)
 
 	// Prepare parameters for the query
 	params := SaveNewContentParams{
@@ -134,8 +132,29 @@ func (s *PostgresStore) SaveContent(newContent types.NewContent) (string, error)
 		Body:               newContent.Body,
 		ExtendedAttributes: newContent.ExtendedAttributes,
 		PublishedStatus:    newContent.PublishedStatus,
-		PublishStart:       pgtype.Timestamptz{Time: startDate, Valid: true},
-		PublishEnd:         pgtype.Timestamptz{Time: endDate, Valid: true},
+		PublishStart:       nil,
+		PublishEnd:         nil,
+	}
+
+	if newContent.PublishedStatus == "SCHEDULED" {
+		dateFormat := "2006-01-02 15:04:05"
+		startDate, err := time.Parse(dateFormat, newContent.PublishStartDateTime)
+		if err != nil {
+			log.Error().Err(err).Msg("Failed to parse start date time")
+			return "", errors.New("invalid start date time format")
+		}
+
+		endDate, err := time.Parse(dateFormat, newContent.PublishEndDateTime)
+		if err != nil {
+			log.Error().Err(err).Msg("Failed to parse end date time")
+			return "", errors.New("invalid end date time format")
+		}
+
+		log.Debug().Msgf("Parsing start time %v as a timestamp", newContent.PublishStartDateTime)
+		log.Debug().Msgf("Parsing end time %v as a timestamp", newContent.PublishEndDateTime)
+
+		params.PublishStart = &startDate
+		params.PublishEnd = &endDate
 	}
 
 	// Execute the query to save the content

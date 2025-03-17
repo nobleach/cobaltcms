@@ -139,7 +139,19 @@ func (s *APIServer) handlePostContent(c echo.Context) error {
 	}
 
 	// TODO: Handle err
-	createdUuid, _ := s.store.SaveContent(content)
+	createdUuid, err := s.store.SaveContent(content)
+	if err != nil {
+		type Error struct {
+			Error string `json:"error"`
+		}
+
+		newError := Error{
+			Error: err.Error(),
+		}
+
+		return c.JSON(http.StatusBadRequest, newError)
+	}
+
 	type NewUuid struct {
 		Uuid string `json:"uuid"`
 	}

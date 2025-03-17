@@ -5,8 +5,9 @@
 package storage
 
 import (
+	"time"
+
 	"github.com/google/uuid"
-	"github.com/jackc/pgx/v5/pgtype"
 	types "github.com/nobleach/cobaltcms/internal/types"
 )
 
@@ -17,30 +18,30 @@ type Content struct {
 	Body               types.JSONB
 	ExtendedAttributes types.JSONB
 	PublishedStatus    string
-	PublishStart       pgtype.Timestamptz
-	PublishEnd         pgtype.Timestamptz
-	CreatedTs          pgtype.Timestamptz
-	UpdatedTs          pgtype.Timestamptz
+	PublishStart       *time.Time
+	PublishEnd         *time.Time
+	CreatedTs          *time.Time
+	UpdatedTs          *time.Time
 }
 
 type ContentsContent struct {
 	ID            uuid.UUID
 	PageContentID uuid.UUID
 	ContentID     uuid.UUID
-	CreatedTs     pgtype.Timestamptz
-	UpdatedTs     pgtype.Timestamptz
+	CreatedTs     *time.Time
+	UpdatedTs     *time.Time
 }
 
 type FragmentType struct {
 	ID        uuid.UUID
 	TypeName  string
-	CreatedTs pgtype.Timestamptz
-	UpdatedTs pgtype.Timestamptz
+	CreatedTs *time.Time
+	UpdatedTs *time.Time
 }
 
 type PublishedStatus struct {
 	ID        uuid.UUID
 	Status    string
-	CreatedTs pgtype.Timestamptz
-	UpdatedTs pgtype.Timestamptz
+	CreatedTs *time.Time
+	UpdatedTs *time.Time
 }
