@@ -29,3 +29,16 @@ RETURNING id;
 -- name: SaveContentRelations :execlastid
 INSERT INTO contents_contents (page_content_id, content_id, created_ts, updated_ts)
 VALUES ($1, $2, now(), now());
+
+-- name: UpdateContent :one
+UPDATE contents 
+SET fragment_type = $2, 
+  name = $3, 
+  body = $4, 
+  extended_attributes = $5, 
+  published_status = $6, 
+  publish_start = $7, 
+  publish_end = $8, 
+  updated_ts = NOW()
+WHERE id = $1
+RETURNING *;

@@ -6,13 +6,51 @@ Content-Type: application/json
   "fragmentType": "SECTION",
   "name": "BodyCopy",
   "body": {
-    "content": "<p>There's a lot of stuff to say today.</p>",
+    "content": "<p>This is some scheduled stuff</p>",
     "contentType": "html"
   },
   "extendedAttributes": {},
   "publishedStatus": "SCHEDULED",
   "publishStartDateTime": "2025-03-16 13:30:00",
   "publishEndDateTime": "2025-04-16 13:30:00"
+}
+
+###
+
+POST http://localhost:8080/content
+accept: application/json
+Content-Type: application/json
+
+{
+  "fragmentType": "SECTION",
+  "name": "BodyCopy",
+  "body": {
+    "content": "<p>There's a lot of stuff to say today.</p>",
+    "contentType": "html"
+  },
+  "extendedAttributes": {},
+  "publishedStatus": "SCHEDULED",
+  "publishStartDateTime": "2025-03-16 13:30:00",
+  "publishEndDateTime": ""
+}
+
+###
+
+POST http://localhost:8080/content
+accept: application/json
+Content-Type: application/json
+
+{
+  "fragmentType": "SECTION",
+  "name": "BodyCopy",
+  "body": {
+    "content": "<p>This is straight published</p>",
+    "contentType": "html"
+  },
+  "extendedAttributes": {},
+  "publishedStatus": "PUBLISHED",
+  "publishStartDateTime": null,
+  "publishEndDateTime": null
 }
 
 ###

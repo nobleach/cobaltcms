@@ -178,3 +178,55 @@ func (q *Queries) SaveNewContent(ctx context.Context, arg SaveNewContentParams) 
 	err := row.Scan(&id)
 	return id, err
 }
+
+const updateContent = `-- name: UpdateContent :one
+UPDATE contents 
+SET fragment_type = $2, 
+  name = $3, 
+  body = $4, 
+  extended_attributes = $5, 
+  published_status = $6, 
+  publish_start = $7, 
+  publish_end = $8, 
+  updated_ts = NOW()
+WHERE id = $1
+RETURNING id, fragment_type, name, body, extended_attributes, published_status, publish_start, publish_end, created_ts, updated_ts
+`
+
+type UpdateContentParams struct {
+	ID                 uuid.UUID
+	FragmentType       string
+	Name               string
+	Body               types.JSONB
+	ExtendedAttributes types.JSONB
+	PublishedStatus    string
+	PublishStart       *time.Time
+	PublishEnd         *time.Time
+}
+
+func (q *Queries) UpdateContent(ctx context.Context, arg UpdateContentParams) (Content, error) {
+	row := q.db.QueryRow(ctx, updateContent,
+		arg.ID,
+		arg.FragmentType,
+		arg.Name,
+		arg.Body,
+		arg.ExtendedAttributes,
+		arg.PublishedStatus,
+		arg.PublishStart,
+		arg.PublishEnd,
+	)
+	var i Content
+	err := row.Scan(
+		&i.ID,
+		&i.FragmentType,
+		&i.Name,
+		&i.Body,
+		&i.ExtendedAttributes,
+		&i.PublishedStatus,
+		&i.PublishStart,
+		&i.PublishEnd,
+		&i.CreatedTs,
+		&i.UpdatedTs,
+	)
+	return i, err
+}
